@@ -8,7 +8,6 @@ import { ADSENSE_CLIENT_ID, siteConfig } from '@/lib/site-config';
 import { FirebaseClientProvider } from '@/firebase';
 import { RecipientProvider } from '@/context/RecipientContext';
 import { FavoritesProvider } from '@/context/FavoritesContext';
-import { VisitorTracker } from '@/components/VisitorTracker';
 import { AppFooter } from '@/components/AppFooter';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { BottomNav } from '@/components/BottomNav';
@@ -191,7 +190,6 @@ export default function RootLayout({
               <RecipientProvider>
                 <FavoritesProvider>
                   <CacheProvider>
-                    <VisitorTracker />
                     <MainLayout>
                       {children}
                     </MainLayout>

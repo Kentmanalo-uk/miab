@@ -70,7 +70,13 @@ function RecipientSkeleton() {
   );
 }
 
-export function BrowsePageClient({ content }: { content: SiteContent }) {
+export function BrowsePageClient({
+  content,
+  initialRecipients,
+}: {
+  content: SiteContent;
+  initialRecipients: Recipient[];
+}) {
   const {
     recipients,
     isLoading,
@@ -81,7 +87,33 @@ export function BrowsePageClient({ content }: { content: SiteContent }) {
     setSearchTerm,
     loadMore,
     scrollPosition,
+    hydrate,
   } = useRecipientContext();
+
+  /**
+   * Seed the shared context with what the server already fetched.
+   *
+   * In an effect, not during render: `hydrate` sets state on the provider, and
+   * doing that while this component renders is the "cannot update a component
+   * while rendering a different one" error.
+   *
+   * Until the effect runs — which includes the server render — the list comes
+   * straight from the prop. That matters for more than a flash of empty
+   * screen: the HTML a crawler receives has to contain the bottles, and an
+   * effect never runs during SSR. Sliced to BATCH_SIZE so the server and the
+   * first client render agree.
+   */
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    hydrate(initialRecipients);
+    setIsHydrated(true);
+  }, [hydrate, initialRecipients]);
+
+  const visibleRecipients =
+    isHydrated || searchTerm
+      ? recipients
+      : initialRecipients.slice(0, BATCH_SIZE);
 
   const loadMoreRef = useRef(null);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, ReactNode } from 'react';
 import { type Recipient } from '@/lib/data';
 // `invalidateNamespace` and `NS` were imported here but never used, and
 // `invalidateNamespace` is not even exported by cached-data (it lives in
@@ -9,7 +9,14 @@ import { type Recipient } from '@/lib/data';
 import { getCachedRecipients } from '@/lib/cached-data';
 import { useDebounce } from '@/hooks/use-debounce';
 
-const BATCH_SIZE = 2; // Load 2 recipients at a time
+/**
+ * Recipients revealed per "load more".
+ *
+ * Exported so a server-rendered page can slice its seed identically. Without
+ * that, SSR emits the full list, the client renders one batch, and React
+ * reports a hydration mismatch.
+ */
+export const BATCH_SIZE = 2;
 
 interface RecipientContextType {
   recipients: Recipient[];
@@ -23,6 +30,10 @@ interface RecipientContextType {
   scrollPosition: number;
   setScrollPosition: (position: number) => void;
   refreshRecipients: () => void;
+  /** Seed the list with data the server already fetched. */
+  hydrate: (seed: Recipient[]) => void;
+  /** Fetch the list once, for any consumer without a server seed. */
+  ensureLoaded: () => void;
 }
 
 const RecipientContext = createContext<RecipientContextType | undefined>(undefined);
@@ -31,7 +42,10 @@ export function RecipientProvider({ children }: { children: ReactNode }) {
   const [initialRecipients, setInitialRecipients] = useState<Recipient[]>([]);
   const [paginatedRecipients, setPaginatedRecipients] = useState<Recipient[]>([]);
   const [searchedRecipients, setSearchedRecipients] = useState<Recipient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Starts false: nothing is fetched until a consumer asks, so an unseeded
+  // provider is idle rather than perpetually "loading".
+  const [isLoading, setIsLoading] = useState(false);
+  const hasLoadedRef = useRef(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,8 +94,27 @@ export function RecipientProvider({ children }: { children: ReactNode }) {
   }, [fetchRecipients, debouncedSearchTerm]);
 
 
-  // Initial data fetch
-  useEffect(() => {
+  /**
+   * Hydrate from data the server already fetched.
+   *
+   * This provider used to fetch on mount, and it is mounted in the ROOT
+   * layout — so every page view of the entire site paid for the browse query:
+   * 50 Firestore reads to build a list most visitors never looked at. The
+   * browse page now fetches server-side, behind its own ISR cache, and hands
+   * the result down here. Nothing else triggers a read at all.
+   */
+  const hydrate = useCallback((seed: Recipient[]) => {
+    setInitialRecipients(seed);
+    setPaginatedRecipients(seed.slice(0, BATCH_SIZE));
+    setHasMore(seed.length > BATCH_SIZE);
+    setIsLoading(false);
+    hasLoadedRef.current = true;
+  }, []);
+
+  /** Fetches once, for any consumer that needs the list without a seed. */
+  const ensureLoaded = useCallback(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
     fetchRecipients();
   }, [fetchRecipients]);
 
@@ -134,6 +167,8 @@ export function RecipientProvider({ children }: { children: ReactNode }) {
     scrollPosition,
     setScrollPosition,
     refreshRecipients,
+    hydrate,
+    ensureLoaded,
   };
 
   return (

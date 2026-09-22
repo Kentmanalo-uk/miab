@@ -22,6 +22,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { isDisplayable } from './moderation';
 import { initializeFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 
 // This function now returns a client-side firestore instance
@@ -54,13 +55,6 @@ export type Feedback = {
   senderId?: string;
 };
 
-export type Visit = {
-    id: string;
-    country: string;
-    city: string;
-    timestamp: any;
-}
-
 export type Review = {
     id: string;
     rating: number;
@@ -70,34 +64,7 @@ export type Review = {
     timestamp: any;
 };
 
-/**
- * Read ceilings.
- *
- * Firestore bills — and rate-limits — per document read, and several of the
- * queries below previously had no ceiling at all: opening a popular bottle read
- * every message ever addressed to that name, and /about read the entire reviews
- * collection on every visit. On the free tier that exhausts the daily quota,
- * at which point every read in the project returns 429 and the whole app stops
- * loading data.
- *
- * These numbers are generous for what the UI actually displays. Raise them only
- * alongside real pagination.
- */
-export const READ_LIMIT = {
-  /** Messages fetched when opening one bottle. */
-  bottleMessages: 50,
-  /** Messages scanned to derive the browse list. */
-  browseScan: 50,
-  /** Messages scanned for a recipient search. */
-  recipientSearch: 50,
-  /** A signed-in user's own sent messages. */
-  userMessages: 50,
-  /** Community reviews on /about. */
-  reviews: 25,
-  /** Admin views. */
-  feedback: 100,
-  visits: 200,
-} as const;
+export { READ_LIMIT } from './read-limits';
 
 // This function is now designed to be called from the client
 export async function addMessage(
@@ -188,14 +155,23 @@ export async function getMessagesForRecipient(
     });
   });
 
+  // Hide anything that fails the profanity filter.
+  //
+  // Screening also happens before a message is written, so this only catches
+  // messages written before the filter existed, or written by something that
+  // bypassed the form. Hidden rather than deleted on purpose: a false positive
+  // that hides a letter is a bug that can be reported and fixed, while one that
+  // deletes a letter has destroyed something a person wrote, permanently.
+  const visible = messages.filter(isDisplayable);
+
   // Perform the sorting on the client-side.
-  messages.sort((a, b) => {
+  visible.sort((a, b) => {
     const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
     const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
     return timeB - timeA;
   });
-  
-  return messages;
+
+  return visible;
 }
 
 export async function getMessageById(id: string): Promise<Message | undefined> {
@@ -308,6 +284,10 @@ export async function getRecipientsByFallback(searchTerm?: string): Promise<Reci
     const data = doc.data();
     const recipientName = data.recipient; // Already lowercase
     const timestamp = data.timestamp;
+
+    // A recipient name is the one piece of user-written text rendered on the
+    // public browse page, so an unscreened one is profanity on the front page.
+    if (!isDisplayable({ recipient: recipientName })) return;
 
     const current = recipientMap.get(recipientName) || { count: 0, latestTimestamp: new Date(0) };
     
@@ -513,36 +493,6 @@ export async function getFeedback(): Promise<Feedback[]> {
 }
 
 
-export async function addVisit(country: string, city: string): Promise<string> {
-    const db = getDb();
-    const visitCollection = collection(db, 'visits');
-    const visitData = {
-        country,
-        city,
-        timestamp: serverTimestamp(),
-    };
-     const docRef = await addDoc(visitCollection, visitData);
-     return docRef.id;
-}
-
-
-export async function getVisits(): Promise<Visit[]> {
-    const db = getDb();
-    const q = query(collection(db, 'visits'), orderBy('timestamp', 'desc'), limit(READ_LIMIT.visits));
-    const querySnapshot = await getDocs(q);
-    const visitList: Visit[] = [];
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const timestamp = data.timestamp as Timestamp;
-        visitList.push({
-            id: doc.id,
-            country: data.country,
-            city: data.city,
-            timestamp: timestamp?.toDate(),
-        });
-    });
-    return visitList;
-}
 
 export async function addReview(rating: number, content: string, senderId: string, senderName: string): Promise<string> {
     const db = getDb();

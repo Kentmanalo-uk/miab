@@ -29,5 +29,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/donate`, changeFrequency: 'yearly', priority: 0.3, lastModified },
     { url: `${baseUrl}/privacy`, changeFrequency: 'yearly', priority: 0.3, lastModified },
     { url: `${baseUrl}/terms`, changeFrequency: 'yearly', priority: 0.3, lastModified },
+    // Listed on purpose. Google Play requires a publicly reachable deletion
+    // URL, and a page a crawler cannot find is one a reviewer may doubt.
+    { url: `${baseUrl}/delete-account`, changeFrequency: 'yearly', priority: 0.3, lastModified },
   ];
 }

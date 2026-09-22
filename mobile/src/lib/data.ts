@@ -21,6 +21,7 @@ import {
 import 'react-native-get-random-values'; // must precede uuid
 import { v4 as uuidv4 } from 'uuid';
 import { getDb } from './firebase';
+import { isDisplayable } from './moderation';
 
 /**
  * Firestore access, ported from the web app's src/lib/data.ts.
@@ -193,8 +194,14 @@ export async function getMessagesForRecipient(
     )
   );
 
+  // Hides anything that fails the profanity filter. Screening also runs before
+  // a message is written, so this only catches messages written before the
+  // filter existed, or written by something that bypassed the form. Hidden
+  // rather than deleted: a false positive that hides a letter can be reported
+  // and fixed, one that deletes it has destroyed what someone wrote.
   return snapshot.docs
     .map((d) => mapMessage(d.id, d.data()))
+    .filter(isDisplayable)
     .sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0));
 }
 
@@ -257,6 +264,9 @@ export async function getRecipients(
     const data = d.data();
     const name = data.recipient as string;
     if (!name) return;
+    // Recipient names are the one piece of user text on the public browse
+    // grid, so an unscreened one is profanity on the home screen.
+    if (!isDisplayable({ recipient: name })) return;
     const ts = data.timestamp instanceof Timestamp ? data.timestamp : null;
     const current = grouped.get(name);
     if (!current) {
@@ -355,7 +365,9 @@ export async function getFeedPage(
     : query(base[0], base[1], base[2]);
 
   const snapshot = await getDocs(q);
-  const messages = snapshot.docs.map((d) => mapMessage(d.id, d.data()));
+  const messages = snapshot.docs
+    .map((d) => mapMessage(d.id, d.data()))
+    .filter(isDisplayable);
 
   return {
     messages,
@@ -411,7 +423,9 @@ export async function getFeedPageForNames(
       );
 
   const snapshot = await getDocs(q);
-  const messages = snapshot.docs.map((d) => mapMessage(d.id, d.data()));
+  const messages = snapshot.docs
+    .map((d) => mapMessage(d.id, d.data()))
+    .filter(isDisplayable);
 
   return {
     messages,

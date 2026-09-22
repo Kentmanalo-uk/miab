@@ -12,7 +12,6 @@
  *                                 google-adsense-account meta tag.
  *   NEXT_PUBLIC_CONTACT_EMAIL     public contact address
  *   NEXT_PUBLIC_SITE_OPERATOR     the natural person / entity operating the site
- *   IPAPI_KEY                     server-only key for the ip-api.com geo lookup.
  *                                 Leave UNSET to disable country/city analytics.
  */
 
@@ -84,9 +83,8 @@ export const AD_SLOTS = {
 // Static, so the "last updated" line reflects when the text actually changed
 // rather than today's date. Update by hand when you edit a policy.
 
-export const POLICY_LAST_UPDATED = 'September 19, 2026';
+export const POLICY_LAST_UPDATED = 'September 20, 2026';
 
 // ── Analytics ────────────────────────────────────────────────────────────────
 
 /** Country/city visit analytics only run when a geo key is configured. */
-export const isGeoAnalyticsConfigured = Boolean(process.env.IPAPI_KEY);

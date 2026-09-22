@@ -8,8 +8,10 @@
  *                message drafts, favorites, the send cooldown, and the
  *                read-through cache. These are required for the site to work
  *                and are never gated.
- *   analytics    The country/city visit record written to Firestore via
- *                /api/track-visit, and Vercel Analytics.
+ *   analytics    Vercel Analytics. The country/city visit record that used to
+ *                be written to Firestore on every session was removed: it cost
+ *                a document write per visitor against the same quota that
+ *                sending messages uses, and nothing ever read it back.
  *   advertising  The Google AdSense script and any ad unit.
  *
  * Nothing in the analytics or advertising categories loads before the visitor

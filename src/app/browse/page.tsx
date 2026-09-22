@@ -1,5 +1,6 @@
 import { BrowsePageClient } from './browse-client';
 import { getContent } from '@/lib/content';
+import { getRecipientsServer } from '@/lib/data-server';
 import { FavoritesProvider } from '@/context/FavoritesContext';
 import type { Metadata } from 'next';
 
@@ -36,10 +37,17 @@ export const metadata: Metadata = {
 };
 
 export default async function BrowsePage() {
-  const content = await getContent();
+  // Both fetched on the server, so the `revalidate = 300` above now covers the
+  // Firestore read as well as the CMS copy. One query every five minutes serves
+  // every visitor, where before each visitor paid 50 reads of their own.
+  const [content, recipients] = await Promise.all([
+    getContent(),
+    getRecipientsServer(),
+  ]);
+
   return (
     <FavoritesProvider>
-      <BrowsePageClient content={content} />
+      <BrowsePageClient content={content} initialRecipients={recipients} />
     </FavoritesProvider>
   );
 }

@@ -28,7 +28,7 @@ export const StoryPreview = forwardRef<HTMLDivElement, StoryPreviewProps>(
         ref={ref}
         className={cn(
           'aspect-[9/16] w-full max-w-md rounded-30px overflow-hidden flex flex-col p-8',
-          isDark ? 'bg-[#0d0d0d] text-white' : 'bg-zinc-50 text-black'
+          isDark ? 'bg-[#14161a] text-[#eae7df]' : 'bg-[#f6f3ec] text-[#16150f]'
         )}
       >
         <div className="text-center">

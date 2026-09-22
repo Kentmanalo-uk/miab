@@ -78,7 +78,7 @@ export function MessageCard({
           className="h-8 w-8 text-muted-foreground transition-all duration-300 -ml-2 opacity-20 hover:opacity-100"
           onClick={handleFavoriteClick}
         >
-            <Heart className={cn("h-5 w-5", favorite ? "text-red-500 fill-red-500" : "text-muted-foreground")} />
+            <Heart className={cn("h-5 w-5", favorite ? "text-destructive fill-destructive" : "text-muted-foreground")} />
         </Button>
         <p className="text-sm text-muted-foreground">{formattedTimestamp}</p>
       </CardFooter>

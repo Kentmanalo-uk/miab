@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Lock, Sparkles } from 'lucide-react-native';
 import React, { memo, useCallback, useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LETTER_TYPE } from '../lib/card-style';
 import type { Message } from '../lib/data';
@@ -195,6 +195,26 @@ function LetterPageBase({
           >
             {message.content}
           </AppText>
+        )}
+
+        {/* An attached drawing. Same `photo` field the website reads, so a
+            sketch drawn on the phone shows up on both. Hidden for a sealed
+            letter along with everything else it is holding back. */}
+        {!!message.photo && !isSealed && (
+          <Image
+            source={{ uri: message.photo }}
+            style={{
+              width: '100%',
+              aspectRatio: 4 / 3,
+              borderRadius: radius.container,
+              marginTop: spacing[6],
+              // Drawings are made on white, so they need a white bed here or
+              // the rounded corners show the page through in dark mode.
+              backgroundColor: '#FFFFFF',
+            }}
+            resizeMode="contain"
+            accessibilityLabel="Drawing attached to this letter"
+          />
         )}
 
         {/* The attached song, under the letter.

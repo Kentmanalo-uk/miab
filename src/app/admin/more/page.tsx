@@ -50,7 +50,7 @@ const SCHEDULED_PRESETS = [
 function SaveFeedback({ result }: { result: 'success' | 'error' | null }) {
   if (!result) return null;
   return result === 'success'
-    ? <span className="flex items-center gap-1 text-sm text-green-600"><CheckCircle className="h-4 w-4" /> Saved</span>
+    ? <span className="flex items-center gap-1 text-sm text-muted-foreground"><CheckCircle className="h-4 w-4" /> Saved</span>
     : <span className="flex items-center gap-1 text-sm text-destructive"><AlertCircle className="h-4 w-4" /> Failed to save</span>;
 }
 

@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { ChevronLeft, FileText, Shield } from 'lucide-react-native';
-import React from 'react';
+import { ChevronLeft, FileText, Shield, Trash2 } from 'lucide-react-native';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DeleteAccountSheet } from '../src/components/DeleteAccountSheet';
 import { AppText, Button, Card, Separator } from '../src/components/ui';
+import { useAuth } from '../src/context/AuthContext';
 import { useConsent } from '../src/context/ConsentContext';
 import { siteConfig } from '../src/lib/site-config';
 import { useTheme, type ThemeSetting } from '../src/theme/ThemeProvider';
@@ -23,6 +25,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { consent, analyticsAllowed, personalisedAdsAllowed, save, withdraw } =
     useConsent();
+  const { isAnonymous } = useAuth();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const openWeb = (path: string) =>
     WebBrowser.openBrowserAsync(`${siteConfig.apiBaseUrl}${path}`);
@@ -208,12 +212,52 @@ export default function SettingsScreen() {
         </Pressable>
       </Card>
 
+      {/* Account — only for real accounts. An anonymous session has nothing to
+          close: signing out already ends it, and offering to "delete" it would
+          promise a ceremony that does not exist. */}
+      {!isAnonymous && (
+        <>
+          <AppText variant="h3" style={{ marginTop: spacing[8] }}>
+            Account
+          </AppText>
+          <Card style={{ marginTop: spacing[3], paddingVertical: spacing[2] }}>
+            <Pressable
+              onPress={() => setDeleteOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Delete your account"
+              style={({ pressed }) => [
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: spacing[4],
+                  paddingVertical: spacing[4],
+                },
+                pressed ? { opacity: 0.6 } : null,
+              ]}
+            >
+              <Trash2 size={20} color={colors.destructive} />
+              <View style={{ flex: 1 }}>
+                <AppText variant="body">Delete your account</AppText>
+                <AppText variant="small">
+                  Removes your account, your messages and your reviews.
+                </AppText>
+              </View>
+            </Pressable>
+          </Card>
+        </>
+      )}
+
       <AppText
         variant="small"
         style={{ textAlign: 'center', marginTop: spacing[8] }}
       >
         © {new Date().getFullYear()} {siteConfig.name}
       </AppText>
+
+      <DeleteAccountSheet
+        visible={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+      />
     </ScrollView>
   );
 }

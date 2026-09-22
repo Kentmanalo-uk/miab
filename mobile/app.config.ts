@@ -19,8 +19,31 @@ const ADMOB_IOS_APP_ID =
 
 const config: ExpoConfig = {
   name: 'Message in a Bottle',
-  slug: 'message-in-a-bottle',
+  // Matches the slug of the EAS project this is linked to below. It was
+  // 'message-in-a-bottle', which EAS rejected because the project created on
+  // the account is called 'miab' — the slug is part of the project's identity
+  // there, not a free-text label. The display name above is what people see;
+  // this is not.
+  slug: 'miab',
   version: '0.1.0',
+  /**
+   * EAS project link.
+   *
+   * `eas init` normally writes this itself, but it can only edit a static
+   * app.json — this config is TypeScript, so it reports
+   * "Cannot automatically write to dynamic config" and stops. Setting it here
+   * by hand is the documented completion of that step, not a workaround.
+   *
+   * `owner` is the Expo account the project belongs to. Without it, a build run
+   * from CI or from a second machine signed into a different account would try
+   * to create its own project rather than using this one.
+   */
+  owner: 'devbymikes-team',
+  extra: {
+    eas: {
+      projectId: '6cd5bc8f-0715-4be7-a44e-61cebec9122b',
+    },
+  },
   // The web app is portrait-locked via the PWA manifest, but a native app that
   // refuses to rotate feels broken on a tablet, and the brief asks for both
   // orientations to be handled.

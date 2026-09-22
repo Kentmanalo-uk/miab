@@ -2,6 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import {
+  Brush,
   CalendarDays,
   Check,
   Copy,
@@ -32,6 +33,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { z } from 'zod';
 import { ShareCard, SHARE_CARD } from '../../src/components/ShareCard';
+import { SketchSheet } from '../../src/components/SketchSheet';
 import { SongPickerSheet } from '../../src/components/SongPickerSheet';
 import { AppText, Button, Card, Input, Label, Textarea } from '../../src/components/ui';
 import { useAuth } from '../../src/context/AuthContext';
@@ -41,6 +43,7 @@ import {
   addMessageCached,
   type SpotifyTrack,
 } from '../../src/lib/cached-data';
+import { screenMessage } from '../../src/lib/moderation';
 import { checkRateLimit, recordMessageSent } from '../../src/lib/rate-limit';
 import { siteConfig } from '../../src/lib/site-config';
 import { useTheme } from '../../src/theme/ThemeProvider';
@@ -49,14 +52,17 @@ import { radius, spacing } from '../../src/theme/tokens';
 /**
  * Send — the app's only write path.
  *
- * Feature parity with the web form: recipient, message body, the optional
- * time-capsule open date, and an optional Spotify track.
+ * Recipient, message body, and three optional extras folded behind one button:
+ * a time-capsule open date, a Spotify track, and a sketch.
  *
  * The song picker calls the website's own /api/spotify/* routes. No Spotify
  * credentials ship in the app — the client secret stays on the server, which is
  * the only place it can actually be kept secret.
  *
- * There is still no photo picker here, matching the web form.
+ * The sketch is stored in the same `photo` field the website already renders,
+ * so a drawing sent from here appears on the site with no change there. The web
+ * form has no sketch pad of its own yet; this is ahead of it, not matching it.
+ * There is still no photo upload on either.
  */
 const FormSchema = z.object({
   recipient: z
@@ -92,6 +98,8 @@ export default function SendScreen() {
   const [track, setTrack] = useState<SpotifyTrack | null>(null);
   const [songPickerOpen, setSongPickerOpen] = useState(false);
   const [extrasOpen, setExtrasOpen] = useState(false);
+  const [sketch, setSketch] = useState<string | null>(null);
+  const [sketchOpen, setSketchOpen] = useState(false);
   const shareCardRef = useRef<View>(null);
 
   useEffect(() => {
@@ -108,6 +116,14 @@ export default function SendScreen() {
     const parsed = FormSchema.safeParse({ recipient, message });
     if (!parsed.success) {
       setErrors(parsed.error.flatten().fieldErrors as Record<string, string[]>);
+      return;
+    }
+
+    // Screened before the write, not after, so a rejected message never
+    // exists in the database at all.
+    const screened = screenMessage(parsed.data.message, parsed.data.recipient);
+    if (!screened.ok) {
+      setErrors({ [screened.field ?? "message"]: [screened.reason ?? ""] });
       return;
     }
 
@@ -128,7 +144,7 @@ export default function SendScreen() {
         parsed.data.message,
         parsed.data.recipient,
         user.uid,
-        undefined,
+        sketch ?? undefined,
         track?.id,
         openDate
       );
@@ -143,6 +159,7 @@ export default function SendScreen() {
       setMessage('');
       setOpenDate(undefined);
       setTrack(null);
+      setSketch(null);
     } catch (e) {
       console.error('Send failed:', e);
       Alert.alert(
@@ -152,7 +169,7 @@ export default function SendScreen() {
     } finally {
       setIsSending(false);
     }
-  }, [recipient, message, openDate, track, user, authLoading, noteSentTo]);
+  }, [recipient, message, openDate, track, sketch, user, authLoading, noteSentTo]);
 
   const copyLink = useCallback(async () => {
     await Clipboard.setStringAsync(shareUrl);
@@ -198,6 +215,7 @@ export default function SendScreen() {
     setRecipient('');
     setMessage('');
     setTrack(null);
+    setSketch(null);
     setCopied(false);
   }, []);
 
@@ -399,7 +417,7 @@ export default function SendScreen() {
           {/* Folding the panel away must not hide what is already attached —
               otherwise you can seal a letter for six months and forget you
               did it. */}
-          {!extrasOpen && (!!openDate || !!track) && (
+          {!extrasOpen && (!!openDate || !!track || !!sketch) && (
             <AppText
               variant="small"
               numberOfLines={1}
@@ -408,6 +426,7 @@ export default function SendScreen() {
               {[
                 openDate ? `Opens ${openDate.toDateString()}` : null,
                 track ? track.name : null,
+                sketch ? "Sketch" : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -536,6 +555,68 @@ export default function SendScreen() {
               </Pressable>
             )}
 
+            {/* Sketch */}
+            <Label style={{ marginTop: spacing[5] }}>Sketch</Label>
+
+            {sketch ? (
+              <View style={{ marginTop: spacing[2] }}>
+                <Image
+                  source={{ uri: sketch }}
+                  style={{
+                    width: '100%',
+                    aspectRatio: 4 / 3,
+                    borderRadius: radius.container,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    // The drawing is on white, so it needs a white bed in dark
+                    // mode too — otherwise the rounded corners show through.
+                    backgroundColor: '#FFFFFF',
+                  }}
+                  resizeMode="contain"
+                  accessibilityLabel="Your sketch"
+                />
+                <View
+                  style={{ flexDirection: 'row', gap: spacing[2], marginTop: spacing[1] }}
+                >
+                  <Button
+                    title="Redraw"
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => setSketchOpen(true)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    title="Remove"
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => setSketch(null)}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => setSketchOpen(true)}
+                disabled={isSending}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: spacing[2],
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: radius.pill,
+                  height: 44,
+                  marginTop: spacing[2],
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Draw a sketch"
+              >
+                <Brush size={16} color={colors.mutedForeground} />
+                <AppText variant="muted">Draw something</AppText>
+              </Pressable>
+            )}
+
             </Animated.View>
           )}
 
@@ -586,6 +667,12 @@ export default function SendScreen() {
         visible={songPickerOpen}
         onClose={() => setSongPickerOpen(false)}
         onPick={setTrack}
+      />
+
+      <SketchSheet
+        visible={sketchOpen}
+        onClose={() => setSketchOpen(false)}
+        onDone={setSketch}
       />
     </KeyboardAvoidingView>
   );

@@ -35,6 +35,7 @@ import {
 } from './ui/collapsible';
 import { addMessageCached } from '@/lib/cached-data';
 import { checkRateLimit, recordMessageSent } from '@/lib/rate-limit';
+import { screenMessage } from '@/lib/moderation';
 import { z } from 'zod';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';

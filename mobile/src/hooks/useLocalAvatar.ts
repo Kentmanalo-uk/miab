@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
+// SDK 54 rewrote expo-file-system around File/Directory objects. The previous
+// API still ships at /legacy and is what the four calls below expect; moving
+// to the new one is a separate change, not part of an SDK bump.
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -71,7 +74,7 @@ export function useLocalAvatar(): LocalAvatar {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,

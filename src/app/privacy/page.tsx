@@ -124,17 +124,6 @@ export default function PrivacyPage() {
                 and the email address you give if you want a reply. Only{' '}
                 {siteConfig.operator} can read these.
               </li>
-              <li>
-                <strong className="text-foreground">
-                  Country and city, if you allow analytics.
-                </strong>{' '}
-                Your IP address is sent to ip-api.com, which returns an
-                approximate country and city. Only that country and city are
-                stored — the IP address itself is not written to the database.
-                This happens once per browsing session and only after you accept
-                the analytics category. No precise or GPS location is ever
-                collected.
-              </li>
             </ul>
           </section>
 
@@ -192,10 +181,6 @@ export default function PrivacyPage() {
               Analytics — only with your consent
             </h3>
             <ul className="list-disc space-y-1 pl-5">
-              <li>
-                <code className="text-foreground">mitb_visitor_tracked</code> —
-                a session flag so one visit is counted once.
-              </li>
               <li>
                 Vercel Analytics, which counts page views. It does not use
                 cookies and does not build a profile of you across sites.
@@ -341,19 +326,6 @@ export default function PrivacyPage() {
                 </a>
               </li>
               <li>
-                <strong className="text-foreground">ip-api.com</strong> —
-                converts an IP address into an approximate country and city,
-                only with analytics consent.{' '}
-                <a
-                  href="https://ip-api.com/docs/legal"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-foreground"
-                >
-                  Legal
-                </a>
-              </li>
-              <li>
                 <strong className="text-foreground">Google Fonts</strong> —
                 typefaces are downloaded at build time and served from this
                 site&apos;s own domain, so your browser never contacts Google to
@@ -399,10 +371,6 @@ export default function PrivacyPage() {
                 are kept while they are being dealt with and then removed.
               </li>
               <li>
-                <strong className="text-foreground">Visit records</strong>{' '}
-                (country and city only) are kept as aggregate history.
-              </li>
-              <li>
                 <strong className="text-foreground">Local storage</strong> stays
                 until you clear your browser data. Clearing it removes your
                 favorites and drafts permanently.
@@ -422,7 +390,20 @@ export default function PrivacyPage() {
               to complain to your data protection authority.
             </p>
             <p>
-              To exercise any of these, write to{' '}
+              Deletion you can do yourself, immediately and without asking:{' '}
+              <Link
+                href="/delete-account"
+                className="underline hover:text-foreground"
+              >
+                delete your account
+              </Link>{' '}
+              removes your account, every message you sent while signed in,
+              every review you wrote, and what this browser has stored. The same
+              option is in the mobile app under Settings → Account.
+            </p>
+            <p>
+              For anything else — a copy of your data, a correction, a
+              restriction — write to{' '}
               <a
                 href={`mailto:${siteConfig.contactEmail}`}
                 className="underline hover:text-foreground"

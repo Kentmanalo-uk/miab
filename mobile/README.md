@@ -49,6 +49,62 @@ npx expo run:android      # or run:ios
 
 ---
 
+## Cloud builds (EAS)
+
+This project is linked to the EAS project **`@devbymikes-team/miab`**
+(`6cd5bc8f-0715-4be7-a44e-61cebec9122b`). The link lives in `app.config.ts`
+under `owner` and `extra.eas.projectId` — `eas init` cannot write it itself,
+because it only edits a static `app.json` and this config is TypeScript.
+
+Note that `slug` is `miab`, not `message-in-a-bottle`: the slug is part of the
+project's identity on Expo and has to match the project that exists there. The
+display name people actually see is still "Message in a Bottle".
+
+### Before your first build: push the environment variables
+
+**EAS builds from a git archive, so `.env` never reaches the build server** —
+it is gitignored, which is correct. Without this step a cloud build succeeds and
+produces an app with no Firebase configuration, which starts and then fails on
+the first read with nothing obvious to point at.
+
+```bash
+node scripts/push-eas-env.mjs --dry-run   # see what it will do
+node scripts/push-eas-env.mjs             # all three environments
+eas env:list                              # confirm
+```
+
+Re-run it whenever a value in `.env` changes. Values are never printed to the
+terminal.
+
+### Profiles
+
+| Profile | Distribution | Android artefact | Use |
+| --- | --- | --- | --- |
+| `development` | internal | APK (debug) | Dev client, with the Metro bundler attached |
+| `preview` | internal | APK | Installable test build, no Metro |
+| `production` | store | AAB | Play Store / App Store, `autoIncrement` on |
+
+```bash
+eas build --profile preview --platform android
+eas build --profile production --platform all
+```
+
+`appVersionSource` is `remote`, so EAS owns the build number and increments it
+for production builds. Do not bump it by hand in `app.config.ts`.
+
+### Not configured yet
+
+- **AdMob application IDs.** `app.config.ts` falls back to Google's published
+  sample IDs, which serve test ads. That is right for development and **must not
+  ship** — set `ADMOB_ANDROID_APP_ID` and `ADMOB_IOS_APP_ID` as EAS variables on
+  the `production` environment before a store build.
+- **Store submission credentials.** `eas.json` has a `submit.production.android`
+  block with a track and release status, but no service-account key and no Apple
+  credentials — those are account secrets and are not invented here. Run
+  `eas submit --platform android` and EAS will walk you through supplying them.
+
+---
+
 ## Screens
 
 Every user-facing route on the web has a native counterpart.
