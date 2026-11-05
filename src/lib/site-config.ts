@@ -69,14 +69,28 @@ export const siteConfig = {
  * or set that variable to "none" to disable ad code entirely (useful for
  * previews and staging).
  */
+const DEFAULT_ADSENSE_CLIENT_ID = 'ca-pub-6787998625628876';
+
+// `||`, not `??`: an empty variable in the hosting panel must fall back to the
+// default rather than silently switching every ad and the verification tag off.
+// Accepts the id with or without the "ca-" prefix, as AdSense shows both.
 const RAW_ADSENSE_CLIENT_ID = (
-  process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ?? 'ca-pub-2857031207812866'
-).trim();
+  process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim() || DEFAULT_ADSENSE_CLIENT_ID
+).replace(/^(pub-)/, 'ca-$1');
 
 export const ADSENSE_CLIENT_ID =
-  RAW_ADSENSE_CLIENT_ID && RAW_ADSENSE_CLIENT_ID !== 'none'
-    ? RAW_ADSENSE_CLIENT_ID
-    : undefined;
+  RAW_ADSENSE_CLIENT_ID !== 'none' ? RAW_ADSENSE_CLIENT_ID : undefined;
+
+/**
+ * Further publisher ids authorised in /ads.txt, besides ADSENSE_CLIENT_ID.
+ *
+ * pub-2857031207812866 is the site's previous AdSense account. It is kept
+ * because AdSense's own instructions are to add the new line to an existing
+ * ads.txt rather than replace it. It authorises that account as a seller only;
+ * the ad tag and verification meta tag use ADSENSE_CLIENT_ID alone. Remove it
+ * once that account is no longer used for this site.
+ */
+export const ADS_TXT_ADDITIONAL_PUBLISHER_IDS = ['pub-2857031207812866'] as const;
 
 /** True only when a syntactically valid publisher id is configured. */
 export const isAdsenseConfigured = Boolean(

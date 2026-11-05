@@ -1,4 +1,7 @@
-import { ADSENSE_CLIENT_ID } from '@/lib/site-config';
+import {
+  ADSENSE_CLIENT_ID,
+  ADS_TXT_ADDITIONAL_PUBLISHER_IDS,
+} from '@/lib/site-config';
 
 /**
  * GET /ads.txt
@@ -31,8 +34,14 @@ export function GET() {
     });
   }
 
-  const publisherId = ADSENSE_CLIENT_ID.replace(/^ca-/, '');
-  const body = `google.com, ${publisherId}, DIRECT, f08c47fec0942fa0\n`;
+  const primary = ADSENSE_CLIENT_ID.replace(/^ca-/, '');
+  const publisherIds = [
+    primary,
+    ...ADS_TXT_ADDITIONAL_PUBLISHER_IDS.filter((id) => id !== primary),
+  ];
+  const body = publisherIds
+    .map((id) => `google.com, ${id}, DIRECT, f08c47fec0942fa0\n`)
+    .join('');
 
   return new Response(body, {
     status: 200,

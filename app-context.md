@@ -17,7 +17,7 @@ metaphor: a name is a bottle, and everyone's messages to that name pile up insid
 - **Hosting:** Vercel (`@vercel/analytics` is wired in; `apphosting.yaml` is a leftover from
   Firebase App Hosting)
 - **Author:** Mike Fernandez ("dvbmike"), admin email `mikefernandex227@gmail.com`
-- **Monetization:** Google AdSense (`ca-pub-2857031207812866`) + PayPal donations
+- **Monetization:** Google AdSense (`ca-pub-6787998625628876`; the previous account `pub-2857031207812866` stays authorised in ads.txt) + PayPal donations
 - **Also shipped as:** a PWA (`@ducanh2912/next-pwa`) and an Android shell via Capacitor
   (`com.messageinabottle.dvbmike`)
 
