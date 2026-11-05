@@ -4,7 +4,9 @@
  * Every deployment-specific value is read from an environment variable with a
  * production default, so nothing here is a secret and nothing is invented.
  *
- * Environment variables (set these in Vercel → Project → Settings → Environment Variables):
+ * Environment variables (on Hostinger: hPanel → your Node.js app → Environment
+ * variables, or a .env file next to package.json on the server. NEXT_PUBLIC_*
+ * values are inlined at build time, so rebuild after changing them):
  *
  *   NEXT_PUBLIC_SITE_URL          canonical origin, no trailing slash
  *   NEXT_PUBLIC_ADSENSE_CLIENT_ID AdSense publisher id, format "ca-pub-XXXXXXXXXXXXXXXX".
@@ -77,13 +79,14 @@ export const AD_SLOTS = {
   browseFeed: process.env.NEXT_PUBLIC_ADSENSE_SLOT_BROWSE_FEED?.trim() || undefined,
   messageBelow: process.env.NEXT_PUBLIC_ADSENSE_SLOT_MESSAGE_BELOW?.trim() || undefined,
   aboutFooter: process.env.NEXT_PUBLIC_ADSENSE_SLOT_ABOUT_FOOTER?.trim() || undefined,
+  guideArticle: process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE_ARTICLE?.trim() || undefined,
 } as const;
 
 // ── Legal document dates ─────────────────────────────────────────────────────
 // Static, so the "last updated" line reflects when the text actually changed
 // rather than today's date. Update by hand when you edit a policy.
 
-export const POLICY_LAST_UPDATED = 'September 20, 2026';
+export const POLICY_LAST_UPDATED = 'November 6, 2026';
 
 // ── Analytics ────────────────────────────────────────────────────────────────
 

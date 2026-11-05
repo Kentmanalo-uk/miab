@@ -1,5 +1,6 @@
 import { getContent } from '@/lib/content';
 import HomeClient from './home-client';
+import { GUIDES } from '@/lib/guides';
 import type { Metadata } from 'next';
 
 export const revalidate = 3600;
@@ -64,7 +65,10 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <HomeClient content={content} />
+      <HomeClient
+        content={content}
+        guides={GUIDES.slice(0, 4).map(({ slug, title, description }) => ({ slug, title, description }))}
+      />
     </>
   );
 }

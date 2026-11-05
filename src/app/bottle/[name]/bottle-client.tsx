@@ -13,11 +13,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 // Content is passed from the server component — no client-side fetch needed for it
-export function BottlePageClient({ content }: { content: SiteContent }) {
+export function BottlePageClient({
+  content,
+  initialMessages,
+}: {
+  content: SiteContent;
+  /** Server-read messages. Undefined when that read failed. */
+  initialMessages?: Message[];
+}) {
   const params = useParams<{ name: string }>();
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
+  const [isLoading, setIsLoading] = useState(initialMessages === undefined);
   const recipientName = decodeURIComponent(params.name);
 
   useEffect(() => {

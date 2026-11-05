@@ -83,10 +83,11 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-foreground">Server logs.</strong> The
-                host (Vercel) records standard request information including IP
-                address, user agent and the URL requested. These are Vercel&apos;s
-                operational logs, not something this site reads or keeps
-                separately.
+                host (Hostinger) records standard request information including
+                IP address, user agent and the URL requested. These are
+                Hostinger&apos;s operational logs, kept for security and
+                troubleshooting, not something this site reads for any other
+                purpose.
               </li>
             </ul>
 
@@ -182,8 +183,10 @@ export default function PrivacyPage() {
             </h3>
             <ul className="list-disc space-y-1 pl-5">
               <li>
-                Vercel Analytics, which counts page views. It does not use
-                cookies and does not build a profile of you across sites.
+                No analytics service currently runs on this site. The analytics
+                switch in the cookie settings exists so that, if page-view
+                counting is ever added, it will only load for people who have
+                said yes, and it will be named here first.
               </li>
             </ul>
 
@@ -297,10 +300,10 @@ export default function PrivacyPage() {
                 </a>
               </li>
               <li>
-                <strong className="text-foreground">Vercel</strong> — hosting,
-                and page-view analytics with consent.{' '}
+                <strong className="text-foreground">Hostinger</strong> — web
+                hosting and server logs.{' '}
                 <a
-                  href="https://vercel.com/legal/privacy-policy"
+                  href="https://www.hostinger.com/legal/privacy-policy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-foreground"

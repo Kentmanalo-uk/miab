@@ -232,9 +232,8 @@ function ConsentPreferencesDialog({
                 Analytics
               </Label>
               <p className="text-xs text-muted-foreground">
-                Records the country and city your visit came from, and Vercel
-                Analytics page views. Helps us see which pages are worth
-                keeping.
+                Anonymous page-view counts. None run on the site right now;
+                this decides whether any added later may load for you.
               </p>
             </div>
             <Switch

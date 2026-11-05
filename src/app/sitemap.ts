@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/site-config';
+import { GUIDES } from '@/lib/guides';
 
 export const revalidate = 86400;
 
@@ -20,10 +21,21 @@ const baseUrl = siteConfig.url;
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
+  const guides: MetadataRoute.Sitemap = GUIDES.map((g) => ({
+    url: `${baseUrl}/guides/${g.slug}`,
+    // A real date, not "now": it only moves when the article is edited.
+    lastModified: new Date(`${g.updated ?? g.published}T00:00:00Z`),
+    changeFrequency: 'yearly',
+    priority: 0.7,
+  }));
+
   return [
     { url: baseUrl, changeFrequency: 'weekly', priority: 1, lastModified },
     { url: `${baseUrl}/send`, changeFrequency: 'monthly', priority: 0.9, lastModified },
     { url: `${baseUrl}/browse`, changeFrequency: 'daily', priority: 0.8, lastModified },
+    { url: `${baseUrl}/guides`, changeFrequency: 'weekly', priority: 0.8, lastModified },
+    ...guides,
+    { url: `${baseUrl}/faq`, changeFrequency: 'monthly', priority: 0.6, lastModified },
     { url: `${baseUrl}/about`, changeFrequency: 'monthly', priority: 0.7, lastModified },
     { url: `${baseUrl}/contact`, changeFrequency: 'yearly', priority: 0.6, lastModified },
     { url: `${baseUrl}/donate`, changeFrequency: 'yearly', priority: 0.3, lastModified },

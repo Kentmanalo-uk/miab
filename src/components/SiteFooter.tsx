@@ -14,6 +14,8 @@ import { siteConfig } from '@/lib/site-config';
  * from the page itself.
  */
 const FOOTER_LINKS = [
+  { href: '/guides', label: 'Guides' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
   { href: '/privacy', label: 'Privacy' },

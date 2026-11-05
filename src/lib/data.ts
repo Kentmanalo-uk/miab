@@ -64,7 +64,8 @@ export type Review = {
     timestamp: any;
 };
 
-export { READ_LIMIT } from './read-limits';
+import { READ_LIMIT } from './read-limits';
+export { READ_LIMIT };
 
 // This function is now designed to be called from the client
 export async function addMessage(

@@ -8,7 +8,8 @@
  *                message drafts, favorites, the send cooldown, and the
  *                read-through cache. These are required for the site to work
  *                and are never gated.
- *   analytics    Vercel Analytics. The country/city visit record that used to
+ *   analytics    Vercel Analytics, on Vercel builds only (the site is hosted
+ *                on Hostinger, where it never loads). The country/city visit record that used to
  *                be written to Firestore on every session was removed: it cost
  *                a document write per visitor against the same quota that
  *                sending messages uses, and nothing ever read it back.

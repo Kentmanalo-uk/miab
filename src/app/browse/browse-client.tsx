@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
 import { Button } from '@/components/ui/button';
-import { useRecipientContext } from '@/context/RecipientContext';
+import { useRecipientContext, BATCH_SIZE } from '@/context/RecipientContext';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTheme } from 'next-themes';
 import { type SiteContent } from '@/lib/content';
@@ -154,12 +154,12 @@ export function BrowsePageClient({
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-y-16 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-20">
-            {isLoading && !recipients.length &&
+            {isLoading && !visibleRecipients.length &&
               Array.from({ length: 2 }).map((_, index) => (
                 <RecipientSkeleton key={index} />
               ))}
 
-            {recipients.map((recipient) => (
+            {visibleRecipients.map((recipient) => (
               <RecipientCard key={recipient.name} recipient={recipient} content={content} />
             ))}
 

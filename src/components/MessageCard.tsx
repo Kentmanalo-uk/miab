@@ -46,7 +46,7 @@ export function MessageCard({
       <Card className={cn(className, "relative group/card")} style={style}>
         <CardContent className="relative p-6">
            <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="mt-2 text-sm font-semibold text-foreground/80">
+            <p className="mt-2 text-sm font-semibold text-foreground/80" suppressHydrationWarning>
               Unlocks {formatDistanceToNow(openDate, { addSuffix: true })}
             </p>
           </div>
@@ -55,7 +55,9 @@ export function MessageCard({
           </blockquote>
         </CardContent>
         <CardFooter className="flex justify-end p-6 pt-0">
-          <p className="text-sm text-muted-foreground">{formattedTimestamp}</p>
+          {/* Formatted in the reader's time zone, which can differ from the
+              server's on the first render of a server-rendered bottle page. */}
+          <p className="text-sm text-muted-foreground" suppressHydrationWarning>{formattedTimestamp}</p>
         </CardFooter>
       </Card>
     );
@@ -80,7 +82,9 @@ export function MessageCard({
         >
             <Heart className={cn("h-5 w-5", favorite ? "text-destructive fill-destructive" : "text-muted-foreground")} />
         </Button>
-        <p className="text-sm text-muted-foreground">{formattedTimestamp}</p>
+        {/* Formatted in the reader's time zone, which can differ from the
+              server's on the first render of a server-rendered bottle page. */}
+          <p className="text-sm text-muted-foreground" suppressHydrationWarning>{formattedTimestamp}</p>
       </CardFooter>
     </Card>
   );

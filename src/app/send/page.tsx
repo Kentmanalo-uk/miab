@@ -6,14 +6,14 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Send a Message',
-  description: 'Cast an anonymous message into the digital ocean. Add a song from Spotify, attach a photo, or draw a sketch. Delivered anonymously to anyone.',
+  description: 'Write an anonymous message, address it to a first name and set it adrift in a public ocean of letters. No account needed. Get a link you can share with the person it is for.',
   keywords: ['send anonymous message', 'anonymous letter', 'secret message', 'message with song', 'digital bottle'],
   alternates: {
     canonical: 'https://messageinabottle.sbs/send',
   },
   openGraph: {
     title: 'Send a Message in a Bottle',
-    description: 'Cast an anonymous message into the digital ocean. Add a song, photo, or sketch.',
+    description: 'Write an anonymous message to a name and get a link you can share. No account needed.',
     url: 'https://messageinabottle.sbs/send',
     siteName: 'Message in a Bottle',
     type: 'website',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Send a Message in a Bottle',
-    description: 'Cast an anonymous message into the digital ocean. Add a song, photo, or sketch.',
+    description: 'Write an anonymous message to a name and get a link you can share. No account needed.',
     images: ['https://i.ibb.co/GvX9XMwm/bottle-default.png'],
   },
 };

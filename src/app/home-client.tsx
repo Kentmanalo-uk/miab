@@ -78,7 +78,34 @@ function ThemedImage({
   );
 }
 
-export default function HomeClient({ content }: { content: SiteContent }) {
+export interface HomeGuideLink {
+  slug: string;
+  title: string;
+  description: string;
+}
+
+const HOW_IT_WORKS = [
+  {
+    title: 'Write to a name',
+    text: 'Type a first name and say the thing you never said: a thank-you, an apology, a confession or a goodbye. No account, no signature.',
+  },
+  {
+    title: 'Let it drift',
+    text: 'Your note joins a public ocean of letters, filed under that name. Nothing is sent to anyone. Anyone browsing can open the bottle and read it.',
+  },
+  {
+    title: 'Share it, or don’t',
+    text: 'You get a link to your message. Pass it to the person it’s for, or leave it for a stranger to find. You can also seal it until a date of your choosing.',
+  },
+];
+
+export default function HomeClient({
+  content,
+  guides = [],
+}: {
+  content: SiteContent;
+  guides?: HomeGuideLink[];
+}) {
   // Admin-controlled flag from Firestore `config/features`. Defaults to visible
   // while loading so the section never flashes away under a reader.
   const { homeMediaSectionVisible } = useFeatures();
@@ -189,6 +216,73 @@ export default function HomeClient({ content }: { content: SiteContent }) {
               </Button>
             </div>
           </div>
+
+          {/* Plain explanatory text, server-rendered. The rest of the page is
+              mostly artwork, so without this a reader (or a reviewer) landing
+              here would not learn what the site does or how it works. */}
+          <section
+            aria-labelledby="how-it-works"
+            className="container mx-auto max-w-3xl px-4 py-12 text-left md:py-16"
+          >
+            <h2 id="how-it-works" className="text-center text-2xl font-semibold tracking-tight">
+              How it works
+            </h2>
+            <ol className="mt-8 grid gap-4 md:grid-cols-3">
+              {HOW_IT_WORKS.map((step, i) => (
+                <li key={step.title} className="rounded-20px border p-5">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Step {i + 1}
+                  </p>
+                  <h3 className="mt-1 font-semibold">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {step.text}
+                  </p>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Every message is public, so keep surnames, schools and other
+              identifying details out of it.{' '}
+              <Link href="/faq" className="underline hover:text-foreground">
+                Read the FAQ
+              </Link>
+              .
+            </p>
+          </section>
+
+          {guides.length > 0 && (
+            <section
+              aria-labelledby="home-guides"
+              className="container mx-auto max-w-3xl px-4 py-12 text-left md:py-16"
+            >
+              <h2 id="home-guides" className="text-center text-2xl font-semibold tracking-tight">
+                Not sure what to write?
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-center text-sm text-muted-foreground">
+                Guides to writing the things that are hardest to say.
+              </p>
+              <ul className="mt-8 grid gap-4 md:grid-cols-2">
+                {guides.map((g) => (
+                  <li key={g.slug}>
+                    <Link
+                      href={`/guides/${g.slug}`}
+                      className="block h-full rounded-20px border p-5 transition-colors hover:bg-muted/50"
+                    >
+                      <h3 className="font-semibold">{g.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {g.description}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 text-center">
+                <Button asChild variant="outline" className="shadow-subtle">
+                  <Link href="/guides">All guides</Link>
+                </Button>
+              </div>
+            </section>
+          )}
 
           <section className="container mx-auto max-w-2xl text-center py-16 md:py-24">
             <Image

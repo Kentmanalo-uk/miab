@@ -186,8 +186,14 @@ export default function TermsPage() {
             <p>
               The Service shows advertisements supplied by Google AdSense. Ads
               are chosen by Google, not by {siteConfig.operator}, and their
-              content is not endorsed here. Ads appear only after you accept the
-              advertising category in the cookie banner. Please do not click ads
+              content is not endorsed here. Ads may appear for every visitor;
+              what the cookie settings control is whether they are
+              personalised. Until you opt in, Google is asked to serve only
+              non-personalised ads without advertising cookies, as the{' '}
+              <Link href="/privacy" className="underline hover:text-foreground">
+                Privacy Policy
+              </Link>{' '}
+              explains. Please do not click ads
               you are not genuinely interested in — artificial clicks put the
               site&apos;s advertising account at risk.
             </p>

@@ -8,6 +8,79 @@ below is marked done unless it was actually checked.
 
 ---
 
+## Update — 6 November 2026 (moving to Hostinger)
+
+### Found
+
+- **The live site is down.** Every URL on `messageinabottle.sbs`, including
+  `/ads.txt`, returns `402 Payment Required — DEPLOYMENT_DISABLED` from Vercel.
+  Google cannot review a site it cannot load. Moving to Hostinger fixes this
+  once DNS points there.
+- **`main` did not build.** `/browse` threw `ReferenceError: BATCH_SIZE is not
+  defined` during prerender, so `next build` exited 1. Fixed (missing import in
+  `browse-client.tsx`).
+- **Every list query in `src/lib/data.ts` would crash at runtime.** It
+  re-exported `READ_LIMIT` (`export { X } from`) without importing it, so the
+  name did not exist in that module: bottle pages, recipient search, history,
+  reviews and admin feedback all threw on their first query. Fixed.
+  Both bugs were hidden by `typescript.ignoreBuildErrors: true`; `tsc` reports
+  them as `TS2304`. Run `npx tsc --noEmit` before every deploy until that flag
+  can be turned off.
+- **Policies named the wrong host and contradicted each other.** Privacy said
+  the host was Vercel and that Vercel Analytics ran; Terms said ads appear only
+  after consent while Privacy (correctly) said the tag always loads and consent
+  controls personalisation. All now match the code.
+- `/send` meta description still advertised photos and sketches, and said
+  messages are "delivered". Neither is true; rewritten.
+- **`/browse` and `/bottle/[name]` sent crawlers no messages.** Browse built a
+  server-safe `visibleRecipients` list and then rendered the empty client
+  list instead; bottle pages never called the existing
+  `getMessagesForRecipientServer`. Both now put real content in the HTML
+  (verified: `/bottle/mike` serves 47 messages, no skeletons). Sealed
+  time-capsule text is replaced with dots in the server HTML, and timestamps
+  carry `suppressHydrationWarning` because server and reader time zones can
+  differ.
+
+### Added: original content
+
+The largest remaining risk was low-value content: the site is short anonymous
+notes plus legal pages. Added, all server-rendered static HTML:
+
+- **`/guides`**, six long-form guides (unsent letters, 60 writing prompts,
+  letters to someone who has died, apologies, writing anonymously and safely,
+  a history of messages in bottles), roughly 800–1,000 words each, with `Article` and
+  `BreadcrumbList` JSON-LD. Data lives in `src/lib/guides.ts`.
+  **Read them before submitting.** They are bylined to the site operator, so
+  edit anything that doesn't sound like you. Original, personal writing is
+  what AdSense rewards.
+- **`/faq`**, 12 answers checked against the Terms, Privacy Policy and code,
+  with `FAQPage` JSON-LD.
+- Home page: a "How it works" section and links to four guides. Send page:
+  links to the prompts and the safety guide.
+- Linked from the footer, the Profile menu (mobile) and the sitemap.
+- New optional ad slot `NEXT_PUBLIC_ADSENSE_SLOT_GUIDE_ARTICLE`, placed once
+  after each guide's body, never inside the text.
+
+### Hostinger notes
+
+- Needs a **Node.js** plan (Business/Cloud "Node.js Web App", or a VPS). This
+  app uses server rendering, ISR and API routes, so it cannot be a static
+  upload to `public_html`. Build `npm run build`, start `npm start` (Next reads
+  `PORT` from the environment).
+- Set environment variables in hPanel. `NEXT_PUBLIC_*` values are baked in at
+  build time, so rebuild after changing them.
+- Vercel Analytics now only loads on Vercel builds (`NEXT_PUBLIC_VERCEL_ENV`),
+  so it won't 404 on Hostinger.
+- `/admin/settings` writes `src/lib/site-content.json` to disk. That persists on
+  Hostinger, unlike Vercel, but **a redeploy from git overwrites it**. Commit
+  edits back, or move that content into Firestore.
+- `.env` is still tracked in git (see B.1). If Hostinger deploys from the repo,
+  rotate the secrets and set them in hPanel instead.
+- After DNS moves: confirm `https://messageinabottle.sbs/ads.txt` returns 200,
+  then resubmit the sitemap in Search Console.
+
+---
+
 ## The headline finding
 
 **Your home page was serving Google a blank page.**

@@ -3,6 +3,7 @@
 
 import { type SiteContent } from '@/lib/content';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -55,6 +56,23 @@ export function SendPageClient({ content }: { content: SiteContent }) {
               </p>
             </div>
             <SendMessageForm content={content} />
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Stuck on the first line? Try one of our{' '}
+              <Link
+                href="/guides/anonymous-message-writing-prompts"
+                className="underline hover:text-foreground"
+              >
+                writing prompts
+              </Link>
+              , or read{' '}
+              <Link
+                href="/guides/writing-anonymously-safely-and-kindly"
+                className="underline hover:text-foreground"
+              >
+                how to write anonymously and safely
+              </Link>
+              .
+            </p>
           </section>
         </div>
       </main>
