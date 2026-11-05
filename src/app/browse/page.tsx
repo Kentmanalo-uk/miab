@@ -40,9 +40,16 @@ export default async function BrowsePage() {
   // Both fetched on the server, so the `revalidate = 300` above now covers the
   // Firestore read as well as the CMS copy. One query every five minutes serves
   // every visitor, where before each visitor paid 50 reads of their own.
+  //
+  // A failed read must not fail the build: /browse is prerendered, so one
+  // Firestore hiccup during deploy would otherwise leave the host with nothing
+  // to serve. An empty list falls back to the client-side fetch.
   const [content, recipients] = await Promise.all([
     getContent(),
-    getRecipientsServer(),
+    getRecipientsServer().catch((err) => {
+      console.error('Server read of browse list failed:', err);
+      return [];
+    }),
   ]);
 
   return (

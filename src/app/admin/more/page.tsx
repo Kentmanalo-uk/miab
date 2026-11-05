@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/firebase';
 import { initializeFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import { firebaseConfig } from '@/firebase/config';
 import { useRouter } from 'next/navigation';
 import { LogOut, Loader2, CheckCircle, AlertCircle, Power, Clock, Sliders } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -72,7 +73,7 @@ export default function AdminMorePage() {
   const auth = useAuth();
   const router = useRouter();
 
-  const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const PROJECT_ID = firebaseConfig.projectId;
   const FS_BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config`;
 
   // Maintenance state

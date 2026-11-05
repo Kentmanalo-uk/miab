@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { firebaseConfig } from '@/firebase/config';
 
 export interface FeaturesConfig {
   spotifyEnabled: boolean;
@@ -14,7 +15,7 @@ const DEFAULTS: FeaturesConfig = {
   homeMediaSectionVisible: true,
 };
 
-const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const PROJECT_ID = firebaseConfig.projectId;
 const FS_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/config/features`;
 
 let cachedConfig: FeaturesConfig | null = null;
