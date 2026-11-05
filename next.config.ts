@@ -2,6 +2,24 @@
 import type { NextConfig } from 'next';
 import withPWAInit from '@ducanh2912/next-pwa';
 
+/**
+ * Tolerates a bare domain ("messageinabottle.sbs") as well as a full origin.
+ * Hosting panels often get the value pasted without a scheme, and `new URL()`
+ * throws on that, which fails the whole build. Mirrors normalizeSiteUrl in
+ * src/lib/site-config.ts.
+ */
+function normalizeSiteUrl(raw: string | undefined): string {
+  const fallback = 'https://messageinabottle.sbs';
+  const value = (raw ?? '').trim();
+  if (!value) return fallback;
+  const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    return new URL(withScheme).origin;
+  } catch {
+    return fallback;
+  }
+}
+
 const withPWA = withPWAInit({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
@@ -41,9 +59,7 @@ const nextConfig: NextConfig = {
   // redirected there permanently. (Vercel can also do this at the domain level;
   // keeping it here means the rule travels with the code.)
   async redirects() {
-    const host = new URL(
-      process.env.NEXT_PUBLIC_SITE_URL || 'https://messageinabottle.sbs'
-    ).host;
+    const host = new URL(normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL)).host;
 
     return [
       {

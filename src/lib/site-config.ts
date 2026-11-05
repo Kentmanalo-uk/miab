@@ -17,17 +17,29 @@
  *                                 Leave UNSET to disable country/city analytics.
  */
 
-function trimTrailingSlash(url: string) {
-  return url.replace(/\/+$/, '');
+/**
+ * Accepts "messageinabottle.sbs", "https://messageinabottle.sbs/" and the like.
+ * A bare domain with no scheme is what hosting panels tend to get pasted in,
+ * and `new URL()` (metadataBase, canonicals) throws on it. Mirrors
+ * `normalizeSiteUrl` in next.config.ts — keep the two in step.
+ */
+function normalizeSiteUrl(raw: string | undefined): string {
+  const fallback = 'https://messageinabottle.sbs';
+  const value = (raw ?? '').trim();
+  if (!value) return fallback;
+  const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    return new URL(withScheme).origin;
+  } catch {
+    return fallback;
+  }
 }
 
 export const siteConfig = {
   name: 'Message in a Bottle',
   shortName: 'MiaB',
   /** Canonical origin. The www host 308-redirects here (see next.config.ts). */
-  url: trimTrailingSlash(
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://messageinabottle.sbs'
-  ),
+  url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   description:
     'Write an anonymous message, address it to a name, and it drifts into a public ocean of letters that anyone can read.',
   /** The individual who builds and operates the site. */
