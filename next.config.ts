@@ -46,7 +46,16 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // ── Hostinger ───────────────────────────────────────────────────────────────
+  // Hostinger's Node.js publisher reports "Detected Next.js standalone server
+  // output" and runs .next/standalone/server.js. Without this option that file
+  // never existed, the app never started, and every request timed out at the
+  // CDN (504). `next start` still works locally and on other hosts.
+  output: 'standalone',
+  // Pin tracing to this folder. Otherwise Next infers the root from any
+  // package-lock.json higher up the disk, and server.js lands in a nested
+  // path such as .next/standalone/mike-project/message-in-a-bottle/server.js.
+  outputFileTracingRoot: process.cwd(),
   typescript: {
     ignoreBuildErrors: true,
   },
