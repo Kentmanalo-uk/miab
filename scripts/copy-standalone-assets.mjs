@@ -59,42 +59,9 @@ fs.writeFileSync(originalFile, generated);
 const wrapper = `// @generated-by copy-standalone-assets (see scripts/copy-standalone-assets.mjs)
 // Starts Next the way an Express app starts: listen(process.env.PORT) as given.
 const http = require('http')
-const fs = require('fs')
-const path = require('path')
 
-// ── Startup diagnostics ──────────────────────────────────────────────────────
-// Hostinger's runtime-log API was returning 500, so the only way to see inside
-// the process was a file the web server serves statically. Written to
-// public_html/miab-diag.txt: how the process was started, PORT/HOSTNAME, the
-// listen result and any crash. Env variable NAMES only, never values.
-// Remove once the deployment is healthy.
-const diagLines = []
-function diag(msg) {
-  const line = new Date().toISOString() + ' ' + msg
-  diagLines.push(line)
-  console.log('[diag] ' + msg)
-  const targets = []
-  if (process.env.HOME) targets.push(path.join(process.env.HOME, 'domains', 'messageinabottle.sbs', 'public_html'))
-  let d = __dirname
-  for (let i = 0; i < 6; i++) { d = path.dirname(d); targets.push(path.join(d, 'public_html')) }
-  for (const t of targets) {
-    try { if (fs.existsSync(t)) { fs.writeFileSync(path.join(t, 'miab-diag.txt'), diagLines.join('\\n') + '\\n'); break } } catch {}
-  }
-}
-diag('start ' + JSON.stringify({
-  argv: process.argv, execArgv: process.execArgv, cwd: process.cwd(), dirname: __dirname,
-  PORT: process.env.PORT ?? null, HOSTNAME: process.env.HOSTNAME ?? null, node: process.version,
-  pid: process.pid, ppid: process.ppid, isMain: require.main === module,
-  parent: module.parent ? module.parent.filename : null,
-  envKeys: Object.keys(process.env).sort(),
-}))
-process.on('uncaughtException', (e) => { diag('uncaughtException ' + (e && e.stack || e)); process.exit(1) })
-process.on('unhandledRejection', (e) => diag('unhandledRejection ' + (e && e.stack || e)))
-const origListen = http.Server.prototype.listen
-http.Server.prototype.listen = function (...args) {
-  diag('listen called with ' + JSON.stringify(args.filter((a) => typeof a !== 'function')))
-  return origListen.apply(this, args)
-}
+process.on('uncaughtException', (e) => { console.error('[server] uncaughtException', e); process.exit(1) })
+process.on('unhandledRejection', (e) => console.error('[server] unhandledRejection', e))
 
 process.env.NODE_ENV = 'production'
 process.chdir(__dirname)
@@ -125,20 +92,16 @@ app
     const server = http.createServer((req, res) => handle(req, res))
     const keepAlive = parseInt(process.env.KEEP_ALIVE_TIMEOUT, 10)
     if (Number.isFinite(keepAlive) && keepAlive >= 0) server.keepAliveTimeout = keepAlive
-    let first = true
-    server.on('request', (req) => {
-      if (first) { first = false; diag('first request ' + req.method + ' ' + req.url) }
-    })
     server.listen(listenOn, () => {
-      diag('ready, listening on ' + JSON.stringify(server.address()))
+      console.log('[server] ready, listening on', JSON.stringify(server.address()))
     })
     server.on('error', (err) => {
-      diag('listen error ' + (err && err.stack || err))
+      console.error('[server] listen error', err)
       process.exit(1)
     })
   })
   .catch((err) => {
-    diag('failed to start ' + (err && err.stack || err))
+    console.error('[server] failed to start', err)
     process.exit(1)
   })
 `;
